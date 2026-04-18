@@ -1,0 +1,67 @@
+{
+  "deck_title": "WD Human-Machine Collaboration Playbook | Section 2",
+  "slides": [
+    {
+      "type": "cover",
+      "title": "Who Should Use It, When, and for What Decisions",
+      "subtitle": "Western Digital Human-Machine Collaboration Playbook, Section 2",
+      "date": "April 2026"
+    },
+    {
+      "type": "divider",
+      "title": "Who Should Use It, When, and for What Decisions",
+      "section_title": "Section 2"
+    },
+    {
+      "type": "standard_2_block",
+      "section_title": "Who Should Use It, When, and for What Decisions",
+      "title": "This playbook is designed for managers who make or shape process-evolution decisions",
+      "left_block_title": "Primary users",
+      "left_block_body": [
+        "Directors and senior directors who own process performance, productivity, quality, or transformation outcomes",
+        "Vice presidents and functional leaders shaping automation, digital, or operating-model priorities",
+        "Cross-functional managers coordinating decisions across operations, engineering, IT, analytics, HR, or finance",
+        "Plant or site leaders balancing performance, workforce, and implementation tradeoffs"
+      ],
+      "right_block_title": "Their role in practice",
+      "right_block_body": [
+        "Own or influence process redesign decisions",
+        "Decide where automation or AI-enabled decision support is worth pursuing",
+        "Align stakeholders across functions, systems, and budgets",
+        "Translate transformation ambition into scalable operating choices"
+      ]
+    },
+    {
+      "type": "standard_1_block",
+      "section_title": "Who Should Use It, When, and for What Decisions",
+      "title": "Use the playbook when a team is deciding whether, where, and how a process should evolve",
+      "block_title": "Typical trigger situations",
+      "block_body": [
+        "Evaluating a process redesign opportunity because of bottlenecks, handoff issues, quality losses, or management pain points",
+        "Considering automation or AI-enabled decision support for part of a workflow",
+        "Assessing readiness for a new digital initiative where data quality, systems integration, governance, or ownership remain unclear",
+        "Prioritizing whether to pilot, scale, redesign first, or defer an opportunity",
+        "Planning workforce implications, including role redesign, skill needs, escalation logic, and accountability"
+      ]
+    },
+    {
+      "type": "standard_2_block_big_left",
+      "section_title": "Who Should Use It, When, and for What Decisions",
+      "title": "The playbook helps leaders make structured choices about target state, readiness, prioritization, and transition path",
+      "dominant_block_title": "Decision types it supports",
+      "dominant_block_body": [
+        "Target-state decisions: what human-machine collaboration model best fits the process",
+        "Readiness decisions: whether the process is ready to move, and what gaps exist across data, systems, governance, capability, and ownership",
+        "Prioritization decisions: whether to pilot, scale, redesign first, or pause",
+        "Transition decisions: what role redesign, capability building, governance, funding, and cross-functional coordination would be required"
+      ],
+      "secondary_block_title": "Typical output",
+      "secondary_block_body": [
+        "A current-state profile",
+        "A set of feasible future-state options",
+        "A structured view of tradeoffs, prerequisites, and risks",
+        "A basis for management to choose a target state and define the transition path"
+      ]
+    }
+  ]
+}
