@@ -12,16 +12,10 @@ dependencies = [
     "python-pptx>=1.0.0",
 ]
 
-[project.optional-dependencies]
-mcp-server = [
-    "mcp>=1.6.0,<2",
-]
-
 [project.scripts]
 slide-render = "slide_automation.main:main"
 slide-validate = "slide_automation.validate_cli:main"
 slide-build = "slide_automation.build_cli:main"
-slide-automation-mcp = "slide_automation.mcp.server_stdio:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -3,9 +3,9 @@
 # Shorter entry from repo root: bin/deck "$@" (same script).
 # Usage (from anywhere):
 #   bash "/path/to/Slide Automation/scripts/slide_build_with_setup.sh" \
-#     --template "templates/Sloan_Template.pptx" --input "examples/example_deck_v1.json"
+#     --template "templates/Sloan_Donor_Deck.pptx" --input "examples/example_deck.json"
 #
-# Requires: python3 on PATH (3.9+). Does not install the MCP extra.
+# Requires: python3 on PATH (3.9+).
 
 set -euo pipefail
 
@@ -15,7 +15,7 @@ VENV="$REPO_ROOT/.venv"
 
 if [[ $# -lt 1 ]]; then
   echo "Usage: $0 --template <template.pptx> --input <deck.json> [other slide-build args]" >&2
-  echo "Example: $0 --template templates/Sloan_Template.pptx --input examples/example_deck_v1.json" >&2
+  echo "Example: $0 --template templates/Sloan_Donor_Deck.pptx --input examples/example_deck.json" >&2
   exit 2
 fi
 

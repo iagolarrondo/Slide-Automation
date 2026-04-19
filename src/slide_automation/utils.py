@@ -97,6 +97,8 @@ def validate_deck_payload(payload: Dict[str, Any]) -> List[str]:
         if slide_type == "divider":
             if "section_title" in slide and not isinstance(slide.get("section_title"), str):
                 errors.append(f"{prefix}.section_title must be a string when provided.")
+            if "section_number" in slide and not isinstance(slide.get("section_number"), (int, str)):
+                errors.append(f"{prefix}.section_number must be an int or numeric string when provided.")
 
         if slide_type == "standard_1_block":
             if "block_title" in slide and not isinstance(slide.get("block_title"), str):
@@ -149,22 +151,31 @@ _CONTENT_MAIN_TITLE_TYPES = {
     "narrow_image_content",
     "wide_image_content",
 }
-_BLOCK_TITLE_ADVISORY_MAX = 16
+_HEADING_ADVISORY_MAX_NONSPACE = 86
 
 
 def _main_title_advisory_max(slide_type: str) -> int:
-    if slide_type in {"narrow_image_content", "wide_image_content"}:
-        return 52
-    if slide_type in {"standard_2_block_big_left", "standard_2_block_big_right"}:
-        return 56
-    if slide_type in {"standard_1_block", "standard_2_block", "standard_3_block"}:
-        return 58
-    return 120
+    return _HEADING_ADVISORY_MAX_NONSPACE
 
 
 def _norm_ws(text: str) -> str:
     return " ".join(text.split()).strip()
 
+
+def _nonspace_len(text: str) -> int:
+    return len("".join(text.split()))
+
+
+def _block_title_advisory_max(slide_type: str, field: str) -> int:
+    if slide_type == "standard_3_block":
+        return 18
+    if slide_type == "standard_2_block" and field in {"left_block_title", "right_block_title"}:
+        return 20
+    if slide_type in {"standard_2_block_big_left", "standard_2_block_big_right"}:
+        return 22
+    if slide_type in {"narrow_image_content", "wide_image_content"}:
+        return 22
+    return 24
 
 def _non_empty_str(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
@@ -207,7 +218,11 @@ def _required_field_errors(slide: Dict[str, Any], prefix: str, slide_type: str) 
         return err
 
     if slide_type == "divider":
-        req_str("section_title")
+        # Backward compatible:
+        # - Preferred: section_number (int)
+        # - Legacy: section_title (often "Section 2") used by renderer to infer number.
+        if "section_number" not in slide:
+            req_str("section_title")
         return err
 
     if slide_type == "standard_1_block":
@@ -256,10 +271,10 @@ def _length_warnings_for_slide(slide: Dict[str, Any], prefix: str, slide_type: s
     warnings: List[str] = []
 
     def warn_field(field: str, text: str, limit: int) -> None:
-        n = len(_norm_ws(text))
+        n = _nonspace_len(_norm_ws(text))
         if n > limit:
             warnings.append(
-                f"{prefix}.{field}: {n} chars (advisory max {limit} for layout); "
+                f"{prefix}.{field}: {n} non-space chars (advisory max {limit}); "
                 "may overflow in PowerPoint — shorten in the spec if needed."
             )
 
@@ -282,7 +297,7 @@ def _length_warnings_for_slide(slide: Dict[str, Any], prefix: str, slide_type: s
     for key in block_keys:
         val = slide.get(key)
         if isinstance(val, str) and val.strip():
-            warn_field(key, val, _BLOCK_TITLE_ADVISORY_MAX)
+            warn_field(key, val, _block_title_advisory_max(slide_type, key))
 
     return warnings
 

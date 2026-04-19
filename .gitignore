@@ -15,10 +15,17 @@ dist/
 build/
 *.egg
 
+# Generated decks (local render output)
+output/
+
+# Canonical copy of last picked JSON (Mac launcher)
+input/
+
 # IDE / OS
 .idea/
 .vscode/
 .DS_Store
+**/.DS_Store
 
 # Testing / coverage
 .pytest_cache/

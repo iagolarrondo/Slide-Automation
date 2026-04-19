@@ -3,39 +3,41 @@ from typing import Any, Dict, Optional
 
 
 @dataclass(frozen=True)
-class LayoutMapping:
-    layout_name: str
-    placeholders: Dict[str, int]
+class DonorSlideMapping:
+    donor_slide_number: int
+    expected_layout_name: str
+    placeholders: Dict[str, Any]
 
 
-LAYOUT_CONFIG: Dict[str, LayoutMapping] = {
-    "cover": LayoutMapping(
-        layout_name="Cover",
+DONOR_SLIDE_CONFIG: Dict[str, DonorSlideMapping] = {
+    "cover": DonorSlideMapping(
+        donor_slide_number=1,
+        expected_layout_name="Cover",
         placeholders={
             "title": 0,
             "subtitle": 1,
-            "background_image": 10,
             "date": 11,
         },
     ),
-    "agenda": LayoutMapping(
-        layout_name="Agenga",
+    "agenda": DonorSlideMapping(
+        donor_slide_number=2,
+        expected_layout_name="Agenga",
         placeholders={
-            "background_image": 10,
-            "agenda_items": 11,
+            "agenda_items": {"shape_index": 0},
         },
     ),
-    "divider": LayoutMapping(
-        layout_name="Divider",
+    "divider": DonorSlideMapping(
+        donor_slide_number=3,
+        expected_layout_name="Divider",
         placeholders={
             "title": 0,
-            "background_image": 10,
-            "optional_subtitle": 11,
-            "section_title": 12,
+            # Divider numeric box (large number) is a body placeholder at idx=11.
+            "section_number": 11,
         },
     ),
-    "standard_1_block": LayoutMapping(
-        layout_name="Standard – 1 Block",
+    "standard_1_block": DonorSlideMapping(
+        donor_slide_number=4,
+        expected_layout_name="Standard – 1 Block",
         placeholders={
             "title": 0,
             "footer": 13,
@@ -44,8 +46,9 @@ LAYOUT_CONFIG: Dict[str, LayoutMapping] = {
             "block_body": 16,
         },
     ),
-    "standard_2_block": LayoutMapping(
-        layout_name="Standard – 2 Blocks",
+    "standard_2_block": DonorSlideMapping(
+        donor_slide_number=5,
+        expected_layout_name="Standard – 2 Blocks",
         placeholders={
             "title": 0,
             "footer": 13,
@@ -56,8 +59,9 @@ LAYOUT_CONFIG: Dict[str, LayoutMapping] = {
             "right_block_body": 18,
         },
     ),
-    "standard_3_block": LayoutMapping(
-        layout_name="Standard – 3 Blocks",
+    "standard_3_block": DonorSlideMapping(
+        donor_slide_number=6,
+        expected_layout_name="Standard – 3 Blocks",
         placeholders={
             "title": 0,
             "footer": 13,
@@ -70,8 +74,9 @@ LAYOUT_CONFIG: Dict[str, LayoutMapping] = {
             "block_3_body": 20,
         },
     ),
-    "standard_2_block_big_left": LayoutMapping(
-        layout_name="Standard – 2 Blocks – Big Left",
+    "standard_2_block_big_left": DonorSlideMapping(
+        donor_slide_number=7,
+        expected_layout_name="Standard – 2 Blocks – Big Left",
         placeholders={
             "title": 0,
             "footer": 13,
@@ -82,8 +87,9 @@ LAYOUT_CONFIG: Dict[str, LayoutMapping] = {
             "secondary_block_body": 20,
         },
     ),
-    "standard_2_block_big_right": LayoutMapping(
-        layout_name="Standard – 2 Blocks – Big Right",
+    "standard_2_block_big_right": DonorSlideMapping(
+        donor_slide_number=8,
+        expected_layout_name="Standard – 2 Blocks – Big Right",
         placeholders={
             "title": 0,
             "footer": 13,
@@ -94,53 +100,39 @@ LAYOUT_CONFIG: Dict[str, LayoutMapping] = {
             "secondary_block_body": 16,
         },
     ),
-    "narrow_image_content": LayoutMapping(
-        layout_name="Narrow Image and Content",
+    "narrow_image_content": DonorSlideMapping(
+        donor_slide_number=9,
+        expected_layout_name="Narrow Image and Content",
         placeholders={
             "title": 0,
-            "image": 10,
             "footer": 14,
             "section_title": 17,
-            "content_block_title": 2,
+            "content_block_title": 23,
             "content_block_body": 22,
         },
     ),
-    "wide_image_content": LayoutMapping(
-        layout_name="Wide Image and Content",
+    "wide_image_content": DonorSlideMapping(
+        donor_slide_number=10,
+        expected_layout_name="Wide Image and Content",
         placeholders={
             "title": 0,
-            "image": 1,
             "footer": 10,
             "section_title": 17,
-            "content_block_title": 14,
+            "content_block_title": 2,
             "content_block_body": 2,
         },
     ),
 }
 
-# Renderer compatibility: slide type -> {"layout_index": int, "placeholders": {...}}
-# Keep these indices aligned with your inspected template layout order.
-_LAYOUT_INDEX_BY_NAME: Dict[str, int] = {
-    "Cover": 0,
-    "Agenga": 1,
-    "Divider": 2,
-    "Standard – 1 Block": 3,
-    "Standard – 2 Blocks": 4,
-    "Standard – 3 Blocks": 5,
-    "Standard – 2 Blocks – Big Left": 6,
-    "Standard – 2 Blocks – Big Right": 7,
-    "Narrow Image and Content": 8,
-    "Wide Image and Content": 9,
-}
-
 SLIDE_TYPE_MAP: Dict[str, Dict[str, Any]] = {
     slide_type: {
-        "layout_index": _LAYOUT_INDEX_BY_NAME[mapping.layout_name],
+        "donor_slide_number": mapping.donor_slide_number,
+        "expected_layout_name": mapping.expected_layout_name,
         "placeholders": mapping.placeholders,
     }
-    for slide_type, mapping in LAYOUT_CONFIG.items()
+    for slide_type, mapping in DONOR_SLIDE_CONFIG.items()
 }
 
 
-def get_layout_mapping(slide_type: str) -> Optional[LayoutMapping]:
-    return LAYOUT_CONFIG.get(slide_type)
+def get_donor_mapping(slide_type: str) -> Optional[DonorSlideMapping]:
+    return DONOR_SLIDE_CONFIG.get(slide_type)

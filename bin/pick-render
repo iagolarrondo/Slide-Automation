@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# One short command from repo root: opens JSON file picker, then renders + opens PPT.
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+exec "$ROOT/scripts/mac_pick_and_render.sh" "$@"

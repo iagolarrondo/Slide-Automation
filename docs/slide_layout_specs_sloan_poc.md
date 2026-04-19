@@ -1,138 +1,20 @@
-# Slide Layout Spec Template
+# Slide Type Guidance
 
-Use one section per layout. Keep it practical. The goal is not to document every visual atom, but to make each layout understandable enough for consistent human use and later automation.
+**Renderer contract:** Each slide’s JSON `"type"` must match [`slide_automation/template_map.py`](../src/slide_automation/template_map.py) and a slide in **`templates/Sloan_Donor_Deck.pptx`** (donor-slide cloning).
 
-**Editorial / storyline rules for generated deck specs** (headings, block titles, synthesis, workflow) live in [`deck_generation_source_of_truth.md`](deck_generation_source_of_truth.md). This file focuses on **layout choice, placeholders, and density** relative to the Sloan template.
+**Supported `"type"` values:** `cover`, `agenda`, `divider`, `standard_1_block`, `standard_2_block`, `standard_3_block`, `standard_2_block_big_left`, `standard_2_block_big_right`, `narrow_image_content`, `wide_image_content`.
 
----
-
-## 1. Layout Overview
-
-**Layout name:**
-
-**Internal ID:**
-
-**Short purpose:**
-
-**Typical use cases:**
-
-**Do not use when:**
+Below: one reference pattern for two-column content, then per-type notes for the donor deck. Editorial rules for specs: [`deck_generation_source_of_truth.md`](deck_generation_source_of_truth.md).
 
 ---
 
-## 2. Placeholder Map
-
-List the placeholders in reading order from top to bottom, left to right.
-
-| Placeholder name | Content type | Required? | Purpose |
-|---|---|---:|---|
-| title | title text | Yes | Main action title / key message |
-| subtitle | short text | No | Secondary framing or context |
-| left_block_title | short text | Yes | Heading for left content area |
-| left_block_body | bullets / short paragraph | Yes | Main left-side content |
-| right_block_title | short text | Yes | Heading for right content area |
-| right_block_body | bullets / short paragraph | Yes | Main right-side content |
-
----
-
-## 3. Content Rules by Placeholder
-
-### title
-- Role:
-- Ideal length:
-- Hard limit:
-- Style constraints:
-- Fallback if too long:
-
-### subtitle
-- Role:
-- Ideal length:
-- Hard limit:
-- Style constraints:
-- Fallback if empty:
-
-### left_block_title
-- Role:
-- Ideal length:
-- Hard limit:
-- Style constraints:
-- Fallback if too long:
-
-### left_block_body
-- Role:
-- Ideal structure:
-- Ideal capacity:
-- Hard limit:
-- Style constraints:
-- Fallback if too dense:
-
-### right_block_title
-- Role:
-- Ideal length:
-- Hard limit:
-- Style constraints:
-- Fallback if too long:
-
-### right_block_body
-- Role:
-- Ideal structure:
-- Ideal capacity:
-- Hard limit:
-- Style constraints:
-- Fallback if too dense:
-
----
-
-## 4. Slide-Level Rules
-
-**Narrative pattern:**
-
-**Best for:**
-
-**Avoid:**
-
-**Escalation / fallback logic:**
-- If title is too long...
-- If one side is much denser than the other...
-- If content requires more explanation...
-- If there are too many bullets...
-
----
-
-## 5. Visual / Styling Notes
-
-Only include rules that matter operationally.
-
-- Default body font size:
-- Minimum body font size:
-- Default title size:
-- Maximum bullets per block:
-- Maximum lines per bullet:
-- Notes on spacing:
-- Notes on alignment:
-- Notes on safe zones / no-go areas:
-
----
-
-## 6. Example References
-
-**Example 1:**
-- Why it is a good example:
-- What this example teaches:
-
-**Example 2:**
-- Why it is a good example:
-- What this example teaches:
-
----
-
-# Worked Example
+# Worked Example (`standard_2_block`)
 
 ## Layout Overview
 
 **Layout name:** Content slide, 2 blocks
 
-**Internal ID:** content_2_block
+**JSON `type`:** `standard_2_block`
 
 **Short purpose:** Compare two streams of information side by side under one headline.
 
@@ -244,9 +126,9 @@ Only include rules that matter operationally.
 
 ---
 
-# First-Pass Layout Specs for Sloan Template PoC
+# Donor slide layout specs (Sloan donor deck)
 
-These specs are draft operating rules for the PoC. They are meant to be practical, not legally binding scripture.
+Operating rules for the PoC **donor deck** (`Sloan_Donor_Deck.pptx`). They are practical guidance, not schema.
 
 ## Global Rules Across the Template
 

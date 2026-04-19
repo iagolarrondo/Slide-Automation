@@ -1,8 +1,8 @@
 # Slide automation — tool contract (API & CLI)
 
-**Primary workflow today:** deck spec JSON (e.g. from **ChatGPT Project** or hand-written files) on your machine → **`slide-validate`** / **`slide-build`** / **`slide-render`** using **`slide_automation.api`**. No MCP or remote hosting is required.
+**Primary workflow:** deck spec JSON (from any LLM, hand-written file, or internal tool) on your machine → **`slide-validate`** / **`slide-build`** / **`slide-render`** using **`slide_automation.api`**. No network is required for rendering.
 
-This document also defines how **optional** integrators (agents with tools, MCP hosts) should think about **this repository** as a **two-stage** capability: **deck-spec generation** (editorial, LLM-heavy) vs **PPT rendering** (deterministic, template-bound).
+This document describes the repository as a **two-stage** capability: **deck-spec generation** (editorial, LLM-heavy) vs **PPT rendering** (deterministic, template-bound).
 
 Related docs:
 
@@ -14,7 +14,7 @@ Related docs:
 
 ## Public API / CLI surface (v1)
 
-The following are the **current stable callable surface** for v1: local scripts and CLIs first; **optional** MCP-style integrations second. Prefer **`slide_automation.api`** (or the **`slide_automation`** package root—same exports) over importing **`slide_automation.renderer`** or **`slide_automation.utils`** directly unless you need internals.
+The following are the **stable callable surface** for v1. Prefer **`slide_automation.api`** (or the **`slide_automation`** package root—same exports) over importing **`slide_automation.renderer`** or **`slide_automation.utils`** directly unless you need internals.
 
 **Do not rename** these public symbols or console script entry points for cosmetic reasons. Intentional renames or signature changes should align with a **versioned** release (e.g. a future v2) and this contract should be updated in the same change.
 
@@ -38,20 +38,18 @@ The lighter **`validate_deck_payload`** (errors only, as used before render in t
 
 **Repo shims** — `python src/main.py` and `python src/validate_deck_spec.py` — invoke the same implementations and remain supported for local use with `PYTHONPATH=src`; they are not a second public naming layer.
 
-**MCP-oriented dict handlers** (optional; not required for the ChatGPT Project → local file workflow): **`slide_automation.mcp`** — see [`mcp_wrapper.md`](mcp_wrapper.md) and [`mcp_tool_surface_v1.md`](mcp_tool_surface_v1.md).
-
 ---
 
 ## 1. Purpose
 
 **Goal**  
-Enable reliable automation: an agent produces (or edits) a **structured deck spec**, then invokes a **renderer** to produce an editable **`.pptx`** from a fixed Sloan working template.
+Enable reliable automation: an agent produces (or edits) a **structured deck spec**, then invokes a **renderer** to produce an editable **`.pptx`** from a fixed Sloan donor deck.
 
 **Scope of this repo today**  
 The codebase is **render-complete** for a defined JSON shape and template map. The **v1 public surface** is `slide_automation.api` plus **`slide-render`** / **`slide-validate`** / **`slide-build`** (see above); `src/main.py` shims mirror the render CLI for workflows that do not use an editable install.
 
 **Out of scope for this document**  
-MCP transport, OAuth, hosted template storage, and full schema validation beyond the current lightweight checks.
+OAuth, hosted template storage, and full schema validation beyond the current lightweight checks.
 
 ---
 
@@ -60,7 +58,7 @@ MCP transport, OAuth, hosted template storage, and full schema validation beyond
 | Stage | Role | Owner | Input | Output |
 |--------|------|--------|--------|--------|
 | **Deck-spec generation** | Turn goals, sources, and storyline into **JSON** that matches renderer expectations. | **Agent + human editorial rules** ([`deck_generation_source_of_truth.md`](deck_generation_source_of_truth.md)) | Natural language, project files, prior thread | `dict` / JSON file: `deck_title`, `slides[]` with `"type"` and per-slide fields |
-| **PPT rendering** | Map spec → **python-pptx** operations using **template_map** + **Sloan .pptx**. | **This repo** (`renderer.render_deck`, `template_map`, `utils`) | Parsed spec `dict`, path to template `.pptx`, output path | Written `.pptx` on disk |
+| **PPT rendering** | Map spec → **python-pptx** operations using **template_map** + **donor `.pptx`**. | **This repo** (`renderer.render_deck`, `template_map`, `utils`) | Parsed spec `dict`, path to template `.pptx`, output path | Written `.pptx` on disk |
 
 **Critical distinction**  
 - **Generation** owns message quality, length for layout, and slide-type choice for storytelling.  
@@ -77,7 +75,7 @@ An agent should **not** expect the renderer to fix a weak spec.
 | Input | Required | Description |
 |--------|----------|-------------|
 | **Deck spec** | Yes | JSON object: top-level `deck_title` (string), `slides` (non-empty array). Each slide has `"type"` ∈ supported set (see `utils.SUPPORTED_SLIDE_TYPES`). |
-| **Template path** | Yes | Filesystem path to Sloan **`.pptx`** working copy (mapped in `src/slide_automation/template_map.py`). |
+| **Template path** | Yes | Filesystem path to donor **`.pptx`** deck (mapped in `src/slide_automation/template_map.py`). |
 | **Output path** | Yes | Destination `.pptx` (parent dirs created if needed). |
 | **Image paths** (image slides) | If those slides are used | Must be valid paths to image files on the machine running the renderer. |
 
@@ -94,7 +92,7 @@ An agent should **not** expect the renderer to fix a weak spec.
 
 - Python 3.9+ with `python-pptx` installed (`requirements.txt`).
 - **`pip install -e .`** or **`PYTHONPATH=src`** so the `slide_automation` package resolves.
-- Template file exists and **layout indices** in `slide_automation/template_map.py` match the inspected template.
+- Donor file exists and donor slide references in `slide_automation/template_map.py` match the inspected deck.
 - Deck spec uses **`"type"`** on each slide (not `slide_type`).
 
 ### 3.4 Limitations
@@ -102,7 +100,6 @@ An agent should **not** expect the renderer to fix a weak spec.
 - **Validation** is lightweight (not full JSON Schema parity with `schemas/`).
 - **Footer / slide number**: written only to **native** materialized placeholders; often absent; **no** textbox fallback.
 - **Title length**: renderer warns but does **not** shorten; overflow is a **spec + PowerPoint** concern.
-- **`background_image`** mapped but **not** implemented in renderer.
 - **No in-process `generate_deck_spec`** in this repo yet—agents generate JSON by other means (see §5).
 
 ---
@@ -131,7 +128,7 @@ def render_deck(
 
 **Contract**  
 - **Raises** `FileNotFoundError` if template missing.  
-- **Raises** `ValueError` for unsupported `slide.type` or bad `layout_index`.  
+- **Raises** `ValueError` for unsupported `slide.type` or invalid donor-slide mapping.  
 - **Does not** validate payload shape; callers should validate first.
 
 **Agent usage**  
@@ -147,12 +144,12 @@ Returns **`(errors, warnings)`**. `errors` combines shape checks from `validate_
 **CLI** (repo root, `PYTHONPATH=src`):
 
 ```bash
-python src/validate_deck_spec.py --input examples/example_deck_v1.json
+python src/validate_deck_spec.py --input examples/example_deck.json
 ```
 
 Exit codes: **`0`** valid (warnings may print to stderr), **`2`** validation errors, **`1`** file/JSON parse errors. Use **`--quiet-warnings`** to hide length warnings.
 
-The older **`validate_deck_payload`** remains the subset used by `main.py` before render; stricter **`validate_deck_spec`** is the basis for agents and future MCP.
+The older **`validate_deck_payload`** remains the subset used by `main.py` before render; stricter **`validate_deck_spec`** is the basis for **`slide-validate`** / **`slide-build`** and for programmatic validation before `render_deck`.
 
 ---
 
@@ -182,7 +179,7 @@ def generate_deck_spec(
 
 **Until implemented**, agents should:
 
-1. Use ChatGPT (or similar) with [`deck_generation_source_of_truth.md`](deck_generation_source_of_truth.md) + [`slide_layout_specs_sloan_poc.md`](slide_layout_specs_sloan_poc.md) as instructions.  
+1. Use an LLM (or editor) with [`deck_generation_source_of_truth.md`](deck_generation_source_of_truth.md) + [`slide_layout_specs_sloan_poc.md`](slide_layout_specs_sloan_poc.md) as instructions.  
 2. Emit JSON matching `validate_deck_*` expectations.  
 3. Call `validate_deck_payload` then `render_deck`.
 
@@ -191,29 +188,23 @@ def generate_deck_spec(
 ## 5. Packaging layout (implemented baseline)
 
 ```text
-pyproject.toml              # setuptools; scripts slide-render / slide-validate / slide-build (+ optional MCP)
+pyproject.toml              # setuptools; scripts slide-render / slide-validate / slide-build
 src/
   slide_automation/
     __init__.py               # public re-exports
-    api.py                    # stable import surface for tools
+    api.py                    # stable import surface
     renderer.py
     template_map.py
     utils.py
     main.py                   # slide-render entry
     validate_cli.py           # slide-validate entry
     build_cli.py              # slide-build entry
-    mcp/                      # optional dict tools + stdio MCP host (see mcp_wrapper.md)
   main.py                     # shim: python src/main.py
   validate_deck_spec.py       # shim: python src/validate_deck_spec.py
-  inspect_template.py
-  placeholder_probe.py
-  image_content_probe.py
+  inspect_template.py         # template / placeholder inspection
 ```
 
 **Install:** `pip install -e .` then **`slide-render`** / **`slide-validate`** / **`slide-build`**, or keep using **`PYTHONPATH=src python src/main.py`** without install.
-
-**MCP (optional)**  
-An optional **stdio** MCP process ships in-repo (`slide-automation-mcp`, `slide_automation.mcp`). It is **not** part of the default ChatGPT Project → local JSON workflow. Hardened auth, remote hosting, and brokered path policy are still **out of scope** here — see MCP docs TODOs.
 
 ---
 
@@ -225,12 +216,10 @@ An optional **stdio** MCP process ships in-repo (`slide-automation-mcp`, `slide_
 | `validate_deck_payload` / `validate_deck_spec` | **Ready** |
 | `load_json` | **Ready** |
 | `slide_automation.api` + package install | **Ready** |
-| CLI, shims, `slide-render` / `slide-validate` | **Ready** |
+| CLI, shims, `slide-render` / `slide-validate` / `slide-build` | **Ready** |
 | Editorial / layout human docs | **Ready** |
 | `generate_deck_spec` implementation | **Not built** |
-| Optional MCP stdio host + dict handlers | **Available** (`slide_automation.mcp`; install `[mcp-server]` extra) |
-| Production MCP auth / multi-tenant hosting | **Not built** |
 
 ---
 
-*This file is the integration contract for local use and optional tool hosts. Implementation details may evolve; keep this doc updated when the public API or packaging changes.*
+*This file is the integration contract for local use. Implementation details may evolve; keep this doc updated when the public API or packaging changes.*

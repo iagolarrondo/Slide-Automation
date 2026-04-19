@@ -38,13 +38,22 @@ class TestTitleVerbatimPolicy(unittest.TestCase):
         self.assertEqual(out, "Too many spaces")
 
     def test_stderr_warning_when_main_title_over_advisory(self) -> None:
-        long_title = "x" * 80
+        long_title = "x" * 90
         buf = io.StringIO()
         with contextlib.redirect_stderr(buf):
             _prepare_main_title(long_title, "standard_2_block")
         err = buf.getvalue()
         self.assertIn("[title-length]", err)
         self.assertIn("title", err)
+
+    def test_warning_counts_non_space_chars(self) -> None:
+        # 87 non-space chars should warn even if spaces inflate the raw length.
+        s = ("x" * 87) + (" " * 20)
+        buf = io.StringIO()
+        with contextlib.redirect_stderr(buf):
+            out = _prepare_main_title(s, "standard_1_block")
+        self.assertEqual(out, ("x" * 87).strip())
+        self.assertIn("non-space chars", buf.getvalue())
 
 
 if __name__ == "__main__":

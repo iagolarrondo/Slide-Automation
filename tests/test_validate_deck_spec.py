@@ -35,6 +35,16 @@ class TestValidateDeckSpec(unittest.TestCase):
         errors, _ = validate_deck_spec(payload)
         self.assertTrue(any("type must be one of" in e for e in errors))
 
+    def test_divider_allows_section_number_without_section_title(self) -> None:
+        payload = {
+            "deck_title": "T",
+            "slides": [
+                {"type": "divider", "title": "D", "section_number": 2},
+            ],
+        }
+        errors, _ = validate_deck_spec(payload)
+        self.assertEqual(errors, [])
+
     def test_missing_required_standard_1(self) -> None:
         payload = {
             "deck_title": "T",
@@ -51,7 +61,7 @@ class TestValidateDeckSpec(unittest.TestCase):
         self.assertTrue(any("block_body" in e for e in errors))
 
     def test_length_warning_long_main_title(self) -> None:
-        long_t = "x" * 80
+        long_t = "x" * 90
         payload = {
             "deck_title": "T",
             "slides": [
@@ -68,7 +78,7 @@ class TestValidateDeckSpec(unittest.TestCase):
         }
         errors, warnings = validate_deck_spec(payload)
         self.assertEqual(errors, [])
-        self.assertTrue(any("slides[0].title" in w and "advisory max 58" in w for w in warnings))
+        self.assertTrue(any("slides[0].title" in w and "advisory max 86" in w for w in warnings))
 
 
 if __name__ == "__main__":

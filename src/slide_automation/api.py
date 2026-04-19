@@ -1,4 +1,4 @@
-"""Stable public entry points for local CLIs, scripts, and optional integrators (e.g. MCP).
+"""Stable public entry points for local CLIs and scripts.
 
 Prefer importing from this module rather than reaching into ``renderer`` or ``utils``
 directly, so names stay stable as internals evolve.
