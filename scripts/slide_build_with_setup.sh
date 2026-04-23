@@ -14,7 +14,8 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 VENV="$REPO_ROOT/.venv"
 
 if [[ $# -lt 1 ]]; then
-  echo "Usage: $0 --template <template.pptx> --input <deck.json> [other slide-build args]" >&2
+  echo "Usage: $0 [--template-id sloan] [--template path/to/donor.pptx] --input <deck.json> [slide-build args]" >&2
+  echo "Example: $0 --input examples/example_deck.json" >&2
   echo "Example: $0 --template templates/Sloan_Donor_Deck.pptx --input examples/example_deck.json" >&2
   exit 2
 fi

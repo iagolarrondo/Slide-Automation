@@ -15,6 +15,15 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--input", required=True, help="Path to deck JSON file.")
     parser.add_argument(
+        "--template-id",
+        default=None,
+        metavar="ID",
+        help=(
+            "Optional override for template family. When omitted, uses JSON ``template_id`` "
+            "if present, else ``sloan``."
+        ),
+    )
+    parser.add_argument(
         "--quiet-warnings",
         action="store_true",
         help="Suppress advisory length warnings (errors still print).",
@@ -33,7 +42,7 @@ def main() -> int:
         print(f"Invalid JSON: {exc}", file=sys.stderr)
         return 1
 
-    errors, warnings = validate_deck_spec(payload)
+    errors, warnings = validate_deck_spec(payload, template_id=args.template_id)
 
     if not args.quiet_warnings:
         for w in warnings:

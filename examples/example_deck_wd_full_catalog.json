@@ -1,0 +1,179 @@
+{
+  "deck_title": "WD full catalog smoke",
+  "template_id": "wd",
+  "slides": [
+    {
+      "type": "wd_cover",
+      "title": "CATALOG COVER AX1",
+      "presenter": "Presenter AX1",
+      "subtitle": "Subtitle AX1",
+      "date": "2026-04-21"
+    },
+    {
+      "type": "wd_agenda_3",
+      "title": "Agenda Three",
+      "agenda_heading": "Agenda Three Heading",
+      "agenda_items": ["Sec A3 one", "Sec A3 two", "Sec A3 three"]
+    },
+    {
+      "type": "wd_agenda_4",
+      "title": "Agenda Four",
+      "agenda_heading": "Agenda Four Heading",
+      "agenda_items": ["Sec A4 one", "Sec A4 two", "Sec A4 three", "Sec A4 four"]
+    },
+    {
+      "type": "wd_agenda_5",
+      "title": "Agenda Five",
+      "agenda_heading": "Agenda Five Heading",
+      "agenda_items": ["Sec A5 one", "Sec A5 two", "Sec A5 three", "Sec A5 four", "Sec A5 five"]
+    },
+    {
+      "type": "wd_agenda_6",
+      "title": "Agenda Six",
+      "agenda_heading": "Agenda Six Heading",
+      "agenda_items": ["Sec A6 one", "Sec A6 two", "Sec A6 three", "Sec A6 four", "Sec A6 five", "Sec A6 six"]
+    },
+    {
+      "type": "wd_divider",
+      "title": "Divider line text",
+      "section_number": 1
+    },
+    {
+      "type": "wd_section_intro",
+      "title": "Section Intro Main",
+      "section_title": "Section Intro Strap",
+      "box_1_title": "Box 1 cap",
+      "box_1_body": "Box 1 message",
+      "box_2_title": "Box 2 cap",
+      "box_2_body": "Box 2 message",
+      "footer": "Footer S7"
+    },
+    {
+      "type": "wd_two_column",
+      "title": "Two Column Main",
+      "section_title": "Two Column Strap",
+      "left_block_title": "L block cap",
+      "left_block_body": "L block body",
+      "right_block_title": "R block cap",
+      "right_block_body": "R block body",
+      "footer": "Footer S8"
+    },
+    {
+      "type": "wd_three_column",
+      "title": "Three Column Main",
+      "section_title": "Three Column Strap",
+      "block_1_title": "Col1 cap",
+      "block_1_body": "Col1 body",
+      "block_2_title": "Col2 cap",
+      "block_2_body": "Col2 body",
+      "block_3_title": "Col3 cap",
+      "block_3_body": "Col3 body",
+      "footer": "Footer S10"
+    },
+    {
+      "type": "wd_four_column",
+      "title": "Four Column Main",
+      "section_title": "Four Column Strap",
+      "block_1_title": "F1 cap",
+      "block_1_body": "F1 body",
+      "block_2_title": "F2 cap",
+      "block_2_body": "F2 body",
+      "block_3_title": "F3 cap",
+      "block_3_body": "F3 body",
+      "block_4_title": "F4 cap",
+      "block_4_body": "F4 body",
+      "footer": "Footer S12"
+    },
+    {
+      "type": "wd_two_column_alt",
+      "title": "Two Column Alt Main",
+      "section_title": "Two Column Alt Strap",
+      "left_block_title": "Alt L cap",
+      "left_block_body": "Alt L body",
+      "right_block_title": "Alt R cap",
+      "right_block_body": "Alt R body",
+      "footer": "Footer S16"
+    },
+    {
+      "type": "wd_mosaic_4",
+      "title": "Mosaic Four Main",
+      "section_title": "Mosaic Four Strap",
+      "tiles": [
+        { "title": "M4-1 cap", "body": "M4-1 body" },
+        { "title": "M4-2 cap", "body": "M4-2 body" },
+        { "title": "M4-3 cap", "body": "M4-3 body" },
+        { "title": "M4-4 cap", "body": "M4-4 body" }
+      ],
+      "footer": "Footer S17"
+    },
+    {
+      "type": "wd_mosaic_6",
+      "title": "Mosaic Six Main",
+      "section_title": "Mosaic Six Strap",
+      "tiles": [
+        { "title": "M6-1 cap", "body": "M6-1 body" },
+        { "title": "M6-2 cap", "body": "M6-2 body" },
+        { "title": "M6-3 cap", "body": "M6-3 body" },
+        { "title": "M6-4 cap", "body": "M6-4 body" },
+        { "title": "M6-5 cap", "body": "M6-5 body" },
+        { "title": "M6-6 cap", "body": "M6-6 body" }
+      ],
+      "footer": "Footer S18"
+    },
+    {
+      "type": "wd_mosaic_8",
+      "title": "Mosaic Eight Main",
+      "section_title": "Mosaic Eight Strap",
+      "tiles": [
+        { "title": "M8-1 cap", "body": "M8-1 body" },
+        { "title": "M8-2 cap", "body": "M8-2 body" },
+        { "title": "M8-3 cap", "body": "M8-3 body" },
+        { "title": "M8-4 cap", "body": "M8-4 body" },
+        { "title": "M8-5 cap", "body": "M8-5 body" },
+        { "title": "M8-6 cap", "body": "M8-6 body" },
+        { "title": "M8-7 cap", "body": "M8-7 body" },
+        { "title": "M8-8 cap", "body": "M8-8 body" }
+      ],
+      "footer": "Footer S19"
+    },
+    {
+      "type": "wd_tile_4",
+      "title": "Tile Four Main",
+      "section_title": "Tile Four Strap",
+      "tiles": [
+        { "title": "T4-1 cap", "body": "T4-1 body" },
+        { "title": "T4-2 cap", "body": "T4-2 body" },
+        { "title": "T4-3 cap", "body": "T4-3 body" },
+        { "title": "T4-4 cap", "body": "T4-4 body" }
+      ],
+      "footer": "Footer S20"
+    },
+    {
+      "type": "wd_tile_5",
+      "title": "Tile Five Main",
+      "section_title": "Tile Five Strap",
+      "tiles": [
+        { "title": "T5-1 cap", "body": "T5-1 body" },
+        { "title": "T5-2 cap", "body": "T5-2 body" },
+        { "title": "T5-3 cap", "body": "T5-3 body" },
+        { "title": "T5-4 cap", "body": "T5-4 body" },
+        { "title": "T5-5 cap", "body": "T5-5 body" }
+      ],
+      "footer": "Footer S21"
+    },
+    {
+      "type": "wd_tile_6",
+      "title": "Tile Six Main",
+      "section_title": "Tile Six Strap",
+      "tiles": [
+        { "title": "T6-1 cap", "body": "T6-1 body" },
+        { "title": "T6-2 cap", "body": "T6-2 body" },
+        { "title": "T6-3 cap", "body": "T6-3 body" },
+        { "title": "T6-4 cap", "body": "T6-4 body" },
+        { "title": "T6-5 cap", "body": "T6-5 body" },
+        { "title": "T6-6 cap", "body": "T6-6 body" }
+      ],
+      "footer": "Footer S22"
+    }
+  ]
+}

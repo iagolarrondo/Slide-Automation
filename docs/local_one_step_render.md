@@ -8,7 +8,7 @@ From the **repo root**, use the wrapper:
 
 ```bash
 cd "/path/to/Slide Automation"
-bin/deck --template templates/Sloan_Donor_Deck.pptx --input examples/example_deck.json
+bin/deck --input examples/example_deck.json
 ```
 
 **Optional — from any directory** (one-time in `~/.zshrc` or `~/.bashrc`; set `ROOT` to your clone):
@@ -21,11 +21,16 @@ alias deck='"$SLIDE_AUTOMATION_ROOT/bin/deck"'
 Then:
 
 ```bash
-deck --template "$SLIDE_AUTOMATION_ROOT/templates/Sloan_Donor_Deck.pptx" \
-     --input "$SLIDE_AUTOMATION_ROOT/examples/example_deck.json"
+deck --input "$SLIDE_AUTOMATION_ROOT/examples/example_deck.json"
 ```
 
-This is the clearest day-to-day workflow: JSON in, PPTX out, donor deck fixed at the command line.
+Optional: `--template-id` (when set, overrides JSON) and `--template /path/to/donor.pptx` to override only the file. If you omit both ``--template-id`` and JSON ``template_id``, the profile defaults to **Sloan**.
+
+WD example:
+
+```bash
+deck --template-id wd --input "$SLIDE_AUTOMATION_ROOT/examples/example_deck_wd_full_catalog.json"
+```
 
 ## Equivalent direct script
 
@@ -35,7 +40,6 @@ Replace the script path with your clone’s absolute path (or use **`bin/deck`**
 
 ```bash
 "/path/to/Slide Automation/scripts/slide_build_with_setup.sh" \
-  --template "/path/to/Slide Automation/templates/Sloan_Donor_Deck.pptx" \
   --input "/path/to/Slide Automation/examples/example_deck.json"
 ```
 
@@ -45,7 +49,7 @@ Replace the script path with your clone’s absolute path (or use **`bin/deck`**
 ## Direct CLI
 
 ```bash
-slide-build --template "templates/Sloan_Donor_Deck.pptx" --input "examples/my_deck.json"
+slide-build --input "examples/my_deck.json"
 ```
 
 - **Output:** if you omit `--output`, the PPTX is written to **`output/<json-stem>.pptx`** (relative to your shell’s current working directory). Parent directories are created as needed.
@@ -57,7 +61,7 @@ slide-build --template "templates/Sloan_Donor_Deck.pptx" --input "examples/my_de
 ## Optional: latest JSON in a folder
 
 ```bash
-slide-build --template "templates/Sloan_Donor_Deck.pptx" --latest-from examples/
+slide-build --latest-from examples/
 ```
 
 Picks the **most recently modified** `*.json` in that directory only (not subfolders). Prints which file was chosen on stderr.

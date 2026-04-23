@@ -9,7 +9,7 @@ It defines how **deck specs** (structured JSON—or equivalent intermediate repr
 | Layer | Owns | Examples |
 |--------|------|----------|
 | **Generation (this doc)** | *What* the deck says and *how* it reads: narrative arc, slide messages, label semantics, synthesis vs paste, when to ask the user, anti-patterns. | “Headings must read as a story in sequence.” “Block titles are thematic, not ‘Block A’.” |
-| **Rendering / template** | *How* text lands in PowerPoint: donor-slide mapping, advisory length **warnings** for titles (no semantic shortening in the renderer), footer behavior. | `slide_automation/template_map.py`, donor slide types. |
+| **Rendering / template** | *How* text lands in PowerPoint: donor-slide mapping, advisory length **warnings** for titles (no semantic shortening in the renderer), footer behavior. | Sloan: `slide_automation/template_registry/sloan.py` (and `template_map.py` shim). WD: `template_registry/wd.py` + [`wd_donor_inventory.md`](wd_donor_inventory.md). |
 
 **Per-slide-type Sloan rules (density, when to use each type, donor-backed behavior):** see [`slide_layout_specs_sloan_poc.md`](slide_layout_specs_sloan_poc.md). Operational CLI and template mapping are also summarized in the repo root [`README.md`](../README.md).
 

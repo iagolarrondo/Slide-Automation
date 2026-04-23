@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Thin wrapper: forwards to scripts/slide_build_with_setup.sh (same behavior).
-# From repo root:  bin/deck --template templates/T.pptx --input examples/spec.json
+# From repo root:  bin/deck --input examples/spec.json  (or pass --template to override donor path)
 
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

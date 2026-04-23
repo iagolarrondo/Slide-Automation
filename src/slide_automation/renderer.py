@@ -12,7 +12,8 @@ from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 
-from .template_map import SLIDE_TYPE_MAP
+from .template_registry.models import AGENDA_PLACEHOLDER_LIST, AGENDA_SLOAN_DONOR_TABLE
+from .template_registry.sloan import SLIDE_TYPE_MAP as _DEFAULT_SLIDE_TYPE_MAP
 
 _R_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 _R_ID_ATTR = f"{{{_R_NS}}}id"
@@ -73,6 +74,18 @@ CONTENT_MAIN_TITLE_TYPES = {
     "standard_2_block_big_right",
     "narrow_image_content",
     "wide_image_content",
+    "wd_cover",
+    "wd_section_intro",
+    "wd_two_column",
+    "wd_two_column_alt",
+    "wd_three_column",
+    "wd_four_column",
+    "wd_mosaic_4",
+    "wd_mosaic_6",
+    "wd_mosaic_8",
+    "wd_tile_4",
+    "wd_tile_5",
+    "wd_tile_6",
 }
 
 
@@ -706,6 +719,9 @@ def render_deck(
     template_path: str | Path,
     payload: Dict[str, Any],
     output_path: str | Path,
+    *,
+    slide_type_map: Dict[str, Dict[str, Any]] | None = None,
+    agenda_render_mode: str | None = None,
 ) -> Path:
     """Render a PPTX file from deck payload and template.
 
@@ -713,6 +729,9 @@ def render_deck(
         template_path: Existing .potx or .pptx template path.
         payload: Parsed and validated deck payload.
         output_path: Destination .pptx path.
+        slide_type_map: Per-slide donor mapping; defaults to the Sloan bundled map.
+        agenda_render_mode: Used only for Sloan ``agenda`` slides (table vs placeholder list).
+            WD agendas use distinct ``wd_agenda_*`` slide types and do not use this path.
 
     Returns:
         Resolved output path.
@@ -721,6 +740,8 @@ def render_deck(
         FileNotFoundError: If template is missing.
         ValueError: If slide type mapping is invalid.
     """
+    type_map = slide_type_map if slide_type_map is not None else _DEFAULT_SLIDE_TYPE_MAP
+    agenda_mode = agenda_render_mode or AGENDA_SLOAN_DONOR_TABLE
     template = Path(template_path)
     if not template.exists():
         raise FileNotFoundError(f"Template file not found: {template}")
@@ -731,10 +752,10 @@ def render_deck(
 
     for slide_number, slide_data in enumerate(payload.get("slides", []), start=1):
         slide_type = slide_data.get("type")
-        if slide_type not in SLIDE_TYPE_MAP:
+        if slide_type not in type_map:
             raise ValueError(f"Unsupported slide type in mapping: {slide_type!r}")
 
-        config = SLIDE_TYPE_MAP[slide_type]
+        config = type_map[slide_type]
         donor_slide_number = config.get("donor_slide_number")
         expected_layout_name = str(config.get("expected_layout_name", ""))
         placeholder_map = config.get("placeholders", {})
@@ -762,6 +783,14 @@ def render_deck(
         slide = _clone_donor_slide(prs, donor_slide)
         slide._field_mapping = placeholder_map  # type: ignore[attr-defined]
 
+        if slide_type.startswith("wd_"):
+            from .template_registry.wd_render import apply_wd_slide
+
+            apply_wd_slide(prs, slide, slide_type, slide_data, slide_number, config)
+            # WD path owns its own editable-target policy and footer writes.
+            # Keep slide-number placeholders untouched by generic footer logic.
+            continue
+
         # Agenda is a special layout: title text is baked into template.
         if slide_type != "agenda":
             title = str(slide_data.get("title", ""))
@@ -776,7 +805,13 @@ def render_deck(
 
         elif slide_type == "agenda":
             if "agenda_items" in slide_data:
-                _render_agenda_table(prs, slide, slide_data.get("agenda_items", []))
+                items = slide_data.get("agenda_items", [])
+                if agenda_mode == AGENDA_SLOAN_DONOR_TABLE:
+                    _render_agenda_table(prs, slide, items)
+                elif agenda_mode == AGENDA_PLACEHOLDER_LIST:
+                    _set_body_or_placeholder(slide, "agenda_items", items)
+                else:
+                    raise ValueError(f"Unknown agenda_render_mode: {agenda_mode!r}")
 
         elif slide_type == "divider":
             # Divider contract:

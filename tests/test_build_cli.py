@@ -96,6 +96,54 @@ class TestBuildCliMain(unittest.TestCase):
             self.assertIn("Using deck spec:", err.getvalue())
             self.assertIn(str(deck.resolve()), err.getvalue())
 
+    def test_unknown_template_id_returns_1(self) -> None:
+        bad = {"deck_title": "T", "slides": [{"type": "cover", "title": "x"}]}
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            deck = tmp_path / "ok.json"
+            deck.write_text(json.dumps(bad))
+            old_argv = sys.argv
+            try:
+                sys.argv = [
+                    "slide-build",
+                    "--template-id",
+                    "not-a-template",
+                    "--input",
+                    str(deck),
+                ]
+                err = StringIO()
+                with mock.patch("sys.stderr", err):
+                    code = main()
+            finally:
+                sys.argv = old_argv
+            self.assertEqual(code, 1)
+            self.assertIn("Unknown template_id", err.getvalue())
+
+    def test_wd_build_runs_when_donor_present(self) -> None:
+        repo = Path(__file__).resolve().parents[1]
+        donor = repo / "templates" / "WD_Template_Donor.pptx"
+        deck = repo / "examples" / "example_deck_wd.json"
+        if not donor.is_file() or not deck.is_file():
+            self.skipTest("WD donor or example JSON missing")
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "wd_smoke.pptx"
+            old_argv = sys.argv
+            try:
+                sys.argv = [
+                    "slide-build",
+                    "--template-id",
+                    "wd",
+                    "--input",
+                    str(deck),
+                    "--output",
+                    str(out),
+                ]
+                code = main()
+            finally:
+                sys.argv = old_argv
+            self.assertEqual(code, 0)
+            self.assertTrue(out.is_file())
+
 
 if __name__ == "__main__":
     unittest.main()

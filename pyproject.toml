@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "slide-automation"
 version = "0.1.0"
-description = "Render structured JSON deck specs to PowerPoint using python-pptx and Sloan templates"
+description = "Render structured JSON deck specs to PowerPoint using python-pptx (multi-template engine; Sloan default)"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [

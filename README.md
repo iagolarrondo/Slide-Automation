@@ -1,6 +1,6 @@
 # Slide Automation
 
-Turn a **model-agnostic JSON deck spec** into an **editable PowerPoint** using `python-pptx` and a **donor deck**: `templates/Sloan_Donor_Deck.pptx`.
+Turn a **model-agnostic JSON deck spec** into an **editable PowerPoint** using `python-pptx` and template-specific donor decks.
 
 **You own:** deck-spec JSON generation (any LLM or editor).  
 **This repo owns:** validation and deterministic local rendering into PowerPoint.
@@ -10,12 +10,19 @@ Turn a **model-agnostic JSON deck spec** into an **editable PowerPoint** using `
 ## Happy Path
 
 1. Generate a deck-spec JSON file. Use [`docs/deck_generation_source_of_truth.md`](docs/deck_generation_source_of_truth.md) for editorial rules and [`docs/slide_layout_specs_sloan_poc.md`](docs/slide_layout_specs_sloan_poc.md) for slide-type selection. If you want paste-in LLM instructions, use [`docs/llm_project_bootstrap_updated.md`](docs/llm_project_bootstrap_updated.md).
-2. Save the JSON anywhere convenient. The repo includes [`examples/example_deck.json`](examples/example_deck.json) as a reference.
+2. Save the JSON anywhere convenient. The repo includes:
+   - [`examples/example_deck.json`](examples/example_deck.json) (Sloan)
+   - [`examples/example_deck_wd.json`](examples/example_deck_wd.json) (WD)
+   - [`examples/example_deck_wd_full_catalog.json`](examples/example_deck_wd_full_catalog.json) (WD full catalog smoke)
 3. From the repo root, run:
 
 ```bash
-bin/deck --template templates/Sloan_Donor_Deck.pptx --input examples/example_deck.json
+bin/deck --input examples/example_deck.json
 ```
+
+This resolves the template from JSON ``template_id`` when set, otherwise **Sloan** (`templates/Sloan_Donor_Deck.pptx`). Override with ``--template-id sloan`` or ``--template-id wd``. To point at another donor file while keeping the same slide map, add ``--template /path/to/donor.pptx``.
+
+**WD decks:** use ``wd_*`` slide types (see [`docs/wd_donor_inventory.md`](docs/wd_donor_inventory.md)) and either top-level ``"template_id": "wd"`` or ``slide-build --template-id wd``. Example JSON: [`examples/example_deck_wd.json`](examples/example_deck_wd.json).
 
 This is the recommended path. It prepares the venv if needed, installs the package, validates the JSON, and writes `output/<spec-stem>.pptx`.
 
@@ -51,6 +58,7 @@ To skip the dialog (e.g. automation), pass the JSON path:
 |----------|------|
 | [`docs/deck_generation_source_of_truth.md`](docs/deck_generation_source_of_truth.md) | **Editorial** — how to write or generate specs (storyline, tone, density). |
 | [`docs/slide_layout_specs_sloan_poc.md`](docs/slide_layout_specs_sloan_poc.md) | **Slide-type guidance** — when to use each donor-backed slide type and how dense it should be. |
+| [`docs/wd_donor_inventory.md`](docs/wd_donor_inventory.md) | **WD donor deck** — slide index ↔ JSON `wd_*` types, placeholders, agenda variants. |
 | [`docs/tool_contract.md`](docs/tool_contract.md) | **Stable API & CLI** — `slide_automation.api`, `slide-validate`, `slide-render`, `slide-build`. |
 | [`docs/local_one_step_render.md`](docs/local_one_step_render.md) | **`slide-build`** and `bin/deck` usage. |
 | [`docs/testing.md`](docs/testing.md) | Smoke commands and unit tests. |
@@ -63,11 +71,11 @@ To skip the dialog (e.g. automation), pass the JSON path:
 
 | Path | Contents |
 |------|----------|
-| `src/slide_automation/` | Package: `api`, `renderer`, `template_map`, `utils`, CLIs |
+| `src/slide_automation/` | Package: `api`, `renderer`, `template_registry` (Sloan + WD), `template_map` (Sloan shim), `utils`, CLIs |
 | `src/main.py`, `src/validate_deck_spec.py` | Shims (`PYTHONPATH=src`) mirroring CLIs |
 | `src/inspect_template.py` | Inspect donor slides, shape indices, and placeholder markers |
-| `templates/` | Donor deck used for rendering |
-| `examples/` | Example JSON (`example_deck.json`) and assets |
+| `templates/` | Donor decks: `Sloan_Donor_Deck.pptx`, `WD_Template_Donor.pptx` |
+| `examples/` | Example JSON (`example_deck.json`, `example_deck_wd.json`) and assets |
 | `schemas/` | JSON schema reference |
 | `tests/` | Unit tests |
 | `output/` | Default render output (ignored by git) |
@@ -94,30 +102,22 @@ pip install -e .
 
 ---
 
-## Donor Deck Setup
+## Donor Mapping Setup
 
-1. Inspect donor slides: `python src/inspect_template.py --template "templates/Sloan_Donor_Deck.pptx"`
-2. Align `src/slide_automation/template_map.py` with donor slide numbers and field mappings.
+1. Inspect donor slides: `python src/inspect_template.py --template-id sloan` or `python src/inspect_template.py --template-id wd`.
+2. Align mappings in:
+   - Sloan: `src/slide_automation/template_registry/sloan.py`
+   - WD: `src/slide_automation/template_registry/wd.py` (+ `docs/wd_donor_inventory.md`)
 3. Validate and render a small spec, then adjust mapping as needed.
 
 ---
 
-## Supported slide types
+## Supported template families
 
-Each slide uses `"type": "<one of below>"`.
+Template families are selected by JSON ``template_id`` (or CLI `--template-id`):
 
-| `type` | Purpose |
-|--------|---------|
-| `cover` | Title slide |
-| `agenda` | Agenda table |
-| `divider` | Section divider |
-| `standard_1_block` | One content block |
-| `standard_2_block` | Two columns |
-| `standard_3_block` | Three columns |
-| `standard_2_block_big_left` | Two blocks, dominant left |
-| `standard_2_block_big_right` | Two blocks, dominant right |
-| `narrow_image_content` | Narrow image + content |
-| `wide_image_content` | Wide image + content |
+- **Sloan (`template_id: "sloan"` or omitted)**: classic `cover` / `agenda` / `standard_*` types.
+- **WD (`template_id: "wd"`)**: `wd_*` slide types documented in [`docs/wd_donor_inventory.md`](docs/wd_donor_inventory.md).
 
 ---
 
@@ -133,6 +133,8 @@ Each slide uses `"type": "<one of below>"`.
 - **narrow_image_content / wide_image_content**: `section_title`, `title`, `image`, `content_block_title`, `content_block_body`, optional `footer`
 
 `block_*_body` may be a string or string array (one bullet per line). Use `"type"` (not `slide_type`).
+
+For WD fields and per-slide editable targets, use [`docs/wd_donor_inventory.md`](docs/wd_donor_inventory.md).
 
 ---
 
@@ -152,6 +154,13 @@ Each slide uses `"type": "<one of below>"`.
 PYTHONPATH=src python3 -m unittest discover -s tests -v
 ```
 
+Smoke renders:
+
+```bash
+PYTHONPATH=src python3 -m slide_automation.build_cli --template-id sloan --input examples/example_deck.json --output output/example_deck_sloan_smoke.pptx
+PYTHONPATH=src python3 -m slide_automation.build_cli --template-id wd --input examples/example_deck_wd_full_catalog.json --output output/example_deck_wd_full_catalog.pptx
+```
+
 See [`docs/testing.md`](docs/testing.md).
 
 ---
@@ -160,4 +169,3 @@ See [`docs/testing.md`](docs/testing.md).
 
 - Validation is intentionally lightweight (not full JSON Schema enforcement).
 - **Agenda** rendering depends on donor table shape/materialization; if absent, renderer falls back to generated table/text.
-- `wide_image_content` donor slide currently materializes fewer placeholders than expected; verify field mapping after donor updates.

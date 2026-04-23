@@ -1,7 +1,8 @@
 """Inspect donor deck slides and materialized placeholder/shape targets.
 
 Usage:
-    python src/inspect_template.py --template templates/Sloan_Donor_Deck.pptx
+    python src/inspect_template.py
+    python src/inspect_template.py --template path/to/custom_donor.pptx
 """
 
 from __future__ import annotations
@@ -9,11 +10,14 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict
 
 from pptx import Presentation
 
-from slide_automation.template_map import SLIDE_TYPE_MAP
+from slide_automation.template_registry.registry import (
+    get_template_profile,
+    resolve_cli_donor_path,
+)
 
 
 SUPPORTED_DONOR_TYPES = [
@@ -38,8 +42,14 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--template",
-        required=True,
-        help="Path to donor .pptx file.",
+        default=None,
+        help="Path to donor .pptx file. If omitted, uses the repo default for --template-id.",
+    )
+    parser.add_argument(
+        "--template-id",
+        default="sloan",
+        metavar="ID",
+        help="Which built-in slide map to annotate inventory with (default: sloan).",
     )
     return parser.parse_args()
 
@@ -52,7 +62,7 @@ def _shape_text(shape: Any) -> str:
     return ""
 
 
-def _print_slide_inventory(prs: Any) -> None:
+def _print_slide_inventory(prs: Any, slide_type_map: Dict[str, Any]) -> None:
     print("Donor slide inventory")
     print("=" * 72)
     print(f"Total donor slides: {len(prs.slides)}")
@@ -68,7 +78,7 @@ def _print_slide_inventory(prs: Any) -> None:
                 title_text = ""
 
         mapped_types = []
-        for slide_type, config in SLIDE_TYPE_MAP.items():
+        for slide_type, config in slide_type_map.items():
             if config.get("donor_slide_number") == slide_no:
                 mapped_types.append(slide_type)
 
@@ -83,7 +93,7 @@ def _print_slide_inventory(prs: Any) -> None:
     missing = [
         slide_type
         for slide_type in SUPPORTED_DONOR_TYPES
-        if slide_type not in SLIDE_TYPE_MAP
+        if slide_type not in slide_type_map
     ]
     if missing:
         print(f"Missing donor mapping entries: {', '.join(missing)}")
@@ -130,7 +140,16 @@ def _print_slide_details(prs: Any) -> None:
 def main() -> int:
     """Inspect donor deck and print slide-centric mapping details."""
     args = parse_args()
-    template_path = Path(args.template)
+    try:
+        profile = get_template_profile(args.template_id)
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+
+    template_path = resolve_cli_donor_path(
+        template_id=args.template_id,
+        template_override=args.template,
+    )
 
     if not template_path.exists():
         print(f"Template not found: {template_path}", file=sys.stderr)
@@ -142,8 +161,15 @@ def main() -> int:
         print(f"Failed to open template: {exc}", file=sys.stderr)
         return 1
 
-    print(f"Donor deck: {template_path}")
-    _print_slide_inventory(prs)
+    print(f"Donor deck: {template_path} (template-id={args.template_id})")
+    slide_type_map = profile.slide_type_map
+    if not slide_type_map:
+        print(
+            "Note: this template-id has no slide_type_map entries yet (stub). "
+            "Inventory will show slides as unmapped.",
+            file=sys.stderr,
+        )
+    _print_slide_inventory(prs, slide_type_map)
     _print_slide_details(prs)
 
     return 0

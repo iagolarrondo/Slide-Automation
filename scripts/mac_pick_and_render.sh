@@ -83,7 +83,7 @@ main() {
 
   echo "Rendering -> $out" >&2
   slide-build \
-    --template "$DONOR" \
+    --template-id sloan \
     --input "$CANON_JSON" \
     --output "$out"
 

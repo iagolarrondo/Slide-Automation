@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 
 from .api import load_json, render_deck, validate_deck_spec
+from .template_registry.registry import get_template_profile, resolve_cli_donor_path
+from .utils import effective_template_id
 
 
 def pick_latest_json(directory: Path) -> Path:
@@ -32,7 +34,21 @@ def parse_args() -> argparse.Namespace:
             "if validation passes. Default output: ./output/<input-stem>.pptx"
         )
     )
-    parser.add_argument("--template", required=True, help="Path to source .potx/.pptx template.")
+    parser.add_argument(
+        "--template-id",
+        default=None,
+        metavar="ID",
+        help=(
+            "Built-in template profile (donor path, slide map). "
+            "When omitted, uses JSON ``template_id`` / ``template`` if set, else ``sloan``. "
+            "Use --template to override only the donor .pptx path."
+        ),
+    )
+    parser.add_argument(
+        "--template",
+        default=None,
+        help="Path to source .potx/.pptx donor deck. If omitted, uses the repo default for --template-id.",
+    )
     src = parser.add_mutually_exclusive_group(required=True)
     src.add_argument("--input", help="Path to deck JSON file.")
     src.add_argument(
@@ -75,7 +91,20 @@ def main() -> int:
             print(f"Invalid JSON: {exc}", file=sys.stderr)
             return 1
 
-        errors, warnings = validate_deck_spec(payload)
+        template_id = effective_template_id(payload, args.template_id)
+        try:
+            profile = get_template_profile(template_id)
+        except ValueError as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            return 1
+        if not profile.is_implemented:
+            print(
+                f"Error: template {template_id!r} is not implemented in this repo build.",
+                file=sys.stderr,
+            )
+            return 1
+
+        errors, warnings = validate_deck_spec(payload, template_id=args.template_id)
         if not args.quiet_warnings:
             for w in warnings:
                 print(f"Warning: {w}", file=sys.stderr)
@@ -91,13 +120,18 @@ def main() -> int:
         else:
             output_path = default_output_path(input_path)
 
-        template_path = Path(args.template).expanduser().resolve()
+        template_path = resolve_cli_donor_path(
+            template_id=template_id,
+            template_override=args.template,
+        )
 
         try:
             written = render_deck(
                 template_path=template_path,
                 payload=payload,
                 output_path=output_path,
+                slide_type_map=profile.slide_type_map,
+                agenda_render_mode=profile.agenda_render_mode,
             )
         except FileNotFoundError as exc:
             print(f"File error: {exc}", file=sys.stderr)

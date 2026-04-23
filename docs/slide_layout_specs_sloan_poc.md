@@ -1,6 +1,6 @@
 # Slide Type Guidance
 
-**Renderer contract:** Each slide’s JSON `"type"` must match [`slide_automation/template_map.py`](../src/slide_automation/template_map.py) and a slide in **`templates/Sloan_Donor_Deck.pptx`** (donor-slide cloning).
+**Renderer contract:** Each slide’s JSON `"type"` must match the Sloan profile in [`slide_automation/template_registry/sloan.py`](../src/slide_automation/template_registry/sloan.py) (same mapping as the legacy [`template_map.py`](../src/slide_automation/template_map.py) shim) and a slide in **`templates/Sloan_Donor_Deck.pptx`** (donor-slide cloning).
 
 **Supported `"type"` values:** `cover`, `agenda`, `divider`, `standard_1_block`, `standard_2_block`, `standard_3_block`, `standard_2_block_big_left`, `standard_2_block_big_right`, `narrow_image_content`, `wide_image_content`.
 

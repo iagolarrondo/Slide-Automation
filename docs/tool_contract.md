@@ -32,9 +32,9 @@ The lighter **`validate_deck_payload`** (errors only, as used before render in t
 
 | Command | Role |
 |---------|------|
-| **`slide-validate`** | Validate a deck JSON file (`--input`, optional `--quiet-warnings`). |
-| **`slide-render`** | Render JSON → PPTX (`--template`, `--input`, `--output`, optional `--quiet`). |
-| **`slide-build`** | **One-step local workflow:** `validate_deck_spec` then `render_deck` if valid (`--template`, `--input` *or* `--latest-from DIR`, optional `--output`, optional `--quiet-warnings`). Default output: `./output/<input-stem>.pptx`. See [`local_one_step_render.md`](local_one_step_render.md). |
+| **`slide-validate`** | Validate a deck JSON file (`--input`, optional ``--template-id``, optional `--quiet-warnings`). |
+| **`slide-render`** | Render JSON → PPTX (`--input`, `--output`, optional `--template-id`, optional `--template` donor path override, optional `--quiet`). |
+| **`slide-build`** | **One-step local workflow:** `validate_deck_spec` then `render_deck` if valid (`--input` *or* `--latest-from DIR`, optional `--template-id`, optional `--template`, optional `--output`, optional `--quiet-warnings`). Default output: `./output/<input-stem>.pptx`. See [`local_one_step_render.md`](local_one_step_render.md). |
 
 **Repo shims** — `python src/main.py` and `python src/validate_deck_spec.py` — invoke the same implementations and remain supported for local use with `PYTHONPATH=src`; they are not a second public naming layer.
 
@@ -43,7 +43,7 @@ The lighter **`validate_deck_payload`** (errors only, as used before render in t
 ## 1. Purpose
 
 **Goal**  
-Enable reliable automation: an agent produces (or edits) a **structured deck spec**, then invokes a **renderer** to produce an editable **`.pptx`** from a fixed Sloan donor deck.
+Enable reliable automation: an agent produces (or edits) a **structured deck spec**, then invokes a **renderer** to produce an editable **`.pptx`** from a selected template donor deck (currently Sloan or WD).
 
 **Scope of this repo today**  
 The codebase is **render-complete** for a defined JSON shape and template map. The **v1 public surface** is `slide_automation.api` plus **`slide-render`** / **`slide-validate`** / **`slide-build`** (see above); `src/main.py` shims mirror the render CLI for workflows that do not use an editable install.
@@ -58,7 +58,7 @@ OAuth, hosted template storage, and full schema validation beyond the current li
 | Stage | Role | Owner | Input | Output |
 |--------|------|--------|--------|--------|
 | **Deck-spec generation** | Turn goals, sources, and storyline into **JSON** that matches renderer expectations. | **Agent + human editorial rules** ([`deck_generation_source_of_truth.md`](deck_generation_source_of_truth.md)) | Natural language, project files, prior thread | `dict` / JSON file: `deck_title`, `slides[]` with `"type"` and per-slide fields |
-| **PPT rendering** | Map spec → **python-pptx** operations using **template_map** + **donor `.pptx`**. | **This repo** (`renderer.render_deck`, `template_map`, `utils`) | Parsed spec `dict`, path to template `.pptx`, output path | Written `.pptx` on disk |
+| **PPT rendering** | Map spec → **python-pptx** using a **template profile** (slide map + agenda mode) + **donor `.pptx`**. | **This repo** (`renderer.render_deck`, `template_registry`, `utils`) | Parsed spec `dict`, donor path, output path | Written `.pptx` on disk |
 
 **Critical distinction**  
 - **Generation** owns message quality, length for layout, and slide-type choice for storytelling.  
@@ -75,7 +75,7 @@ An agent should **not** expect the renderer to fix a weak spec.
 | Input | Required | Description |
 |--------|----------|-------------|
 | **Deck spec** | Yes | JSON object: top-level `deck_title` (string), `slides` (non-empty array). Each slide has `"type"` ∈ supported set (see `utils.SUPPORTED_SLIDE_TYPES`). |
-| **Template path** | Yes | Filesystem path to donor **`.pptx`** deck (mapped in `src/slide_automation/template_map.py`). |
+| **Template / donor path** | Yes (resolved) | Default donor comes from **`--template-id`** (built-in registry; default **`sloan`**). Override the file with **`--template`** when needed. Slide-type mapping lives in `src/slide_automation/template_registry/` (Sloan + WD implemented). |
 | **Output path** | Yes | Destination `.pptx` (parent dirs created if needed). |
 | **Image paths** (image slides) | If those slides are used | Must be valid paths to image files on the machine running the renderer. |
 
@@ -92,7 +92,7 @@ An agent should **not** expect the renderer to fix a weak spec.
 
 - Python 3.9+ with `python-pptx` installed (`requirements.txt`).
 - **`pip install -e .`** or **`PYTHONPATH=src`** so the `slide_automation` package resolves.
-- Donor file exists and donor slide references in `slide_automation/template_map.py` match the inspected deck.
+- Donor file exists and donor slide references in `slide_automation.template_registry.sloan` match the inspected deck (for **`sloan`**).
 - Deck spec uses **`"type"`** on each slide (not `slide_type`).
 
 ### 3.4 Limitations
@@ -111,20 +111,26 @@ Today the **working** pipeline is:
 ```text
 load_json(path) → dict
 validate_deck_payload(dict) → list[str]   # empty == ok
-render_deck(template_path, payload, output_path) → Path
+render_deck(template_path, payload, output_path, *, slide_type_map=..., agenda_render_mode=...) → Path
 ```
 
 ### 4.1 `render_deck` (implemented)
 
-**Signature** (see `src/slide_automation/renderer.py`):
+**Signature** (see `src/slide_automation/api.py` / `renderer.py`):
 
 ```python
 def render_deck(
     template_path: str | Path,
     payload: Dict[str, Any],
     output_path: str | Path,
+    *,
+    template_id: str | None = None,
+    slide_type_map: dict[str, dict[str, Any]] | None = None,
+    agenda_render_mode: str | None = None,
 ) -> Path: ...
 ```
+
+Keyword-only mapping kwargs default to the **Sloan** profile when omitted. Optional **`template_id`** selects a built-in profile unless **`slide_type_map`** / **`agenda_render_mode`** are passed explicitly.
 
 **Contract**  
 - **Raises** `FileNotFoundError` if template missing.  
@@ -194,7 +200,8 @@ src/
     __init__.py               # public re-exports
     api.py                    # stable import surface
     renderer.py
-    template_map.py
+    template_registry/        # built-in profiles (sloan, wd), repo_root + donor resolution
+    template_map.py           # backward-compatible Sloan re-exports
     utils.py
     main.py                   # slide-render entry
     validate_cli.py           # slide-validate entry

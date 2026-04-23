@@ -1,0 +1,64 @@
+{
+  "deck_title": "WD donor smoke deck",
+  "template_id": "wd",
+  "slides": [
+    {
+      "type": "wd_cover",
+      "title": "Quarterly Business Review",
+      "presenter": "Alex Morgan",
+      "subtitle": "Storage Platforms",
+      "date": "April 2026"
+    },
+    {
+      "type": "wd_agenda_4",
+      "title": "Agenda",
+      "agenda_items": [
+        "Market context",
+        "Product roadmap",
+        "Financial outlook",
+        "Q&A"
+      ]
+    },
+    {
+      "type": "wd_divider",
+      "title": "Market context",
+      "section_number": 1
+    },
+    {
+      "type": "wd_section_intro",
+      "title": "Market context",
+      "section_title": "Executive summary"
+    },
+    {
+      "type": "wd_two_column",
+      "title": "Competitive landscape",
+      "section_title": "Key themes",
+      "left_block_title": "Incumbents",
+      "left_block_body": ["Vendor A", "Vendor B"],
+      "right_block_title": "Challengers",
+      "right_block_body": "Startup motion in edge segments."
+    },
+    {
+      "type": "wd_three_column",
+      "title": "Roadmap pillars",
+      "section_title": "FY26 focus",
+      "block_1_title": "Performance",
+      "block_1_body": "Latency and throughput.",
+      "block_2_title": "Reliability",
+      "block_2_body": "Durability and recovery.",
+      "block_3_title": "TCO",
+      "block_3_body": "CapEx and OpEx levers."
+    },
+    {
+      "type": "wd_mosaic_4",
+      "title": "Initiative snapshot",
+      "section_title": "Four workstreams",
+      "tiles": [
+        { "title": "A1", "body": "Details one." },
+        { "title": "B1", "body": "Details two." },
+        { "title": "C1", "body": "Details three." },
+        { "title": "D1", "body": "Details four." }
+      ]
+    }
+  ]
+}
