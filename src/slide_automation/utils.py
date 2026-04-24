@@ -207,6 +207,12 @@ def validate_deck_payload(payload: Dict[str, Any], *, template_id: str | None = 
                 if key in slide and not isinstance(slide.get(key), (str, list)):
                     errors.append(f"{prefix}.{key} must be a string or array of strings when provided.")
 
+        if slide_type in {"wd_one_block_grouped", "wd_one_block_placeholder"}:
+            if "block_title" in slide and not isinstance(slide.get("block_title"), str):
+                errors.append(f"{prefix}.block_title must be a string when provided.")
+            if "block_body" in slide and not isinstance(slide.get("block_body"), (str, list)):
+                errors.append(f"{prefix}.block_body must be a string or array of strings when provided.")
+
         if slide_type == "wd_three_column":
             for key in ("block_1_title", "block_2_title", "block_3_title"):
                 if key in slide and not isinstance(slide.get(key), str):
@@ -257,6 +263,8 @@ _CONTENT_MAIN_TITLE_TYPES = {
     "wd_section_intro",
     "wd_two_column",
     "wd_two_column_alt",
+    "wd_one_block_grouped",
+    "wd_one_block_placeholder",
     "wd_three_column",
     "wd_four_column",
     "wd_mosaic_4",
@@ -425,6 +433,12 @@ def _required_field_errors_wd(
         req_body("left_block_body")
         req_str("right_block_title")
         req_body("right_block_body")
+        return err
+
+    if slide_type in {"wd_one_block_grouped", "wd_one_block_placeholder"}:
+        req_str("section_title")
+        req_str("block_title")
+        req_body("block_body")
         return err
 
     if slide_type == "wd_three_column":

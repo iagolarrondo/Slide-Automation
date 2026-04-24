@@ -115,6 +115,44 @@ class TestWdRenderingFidelity(unittest.TestCase):
         self.assertTrue(divider_text.startswith("01"))
         self.assertIn("Only Title", divider_text)
 
+    def test_wd_divider_uses_explicit_section_number_zero_padded(self) -> None:
+        prs = _render_wd(
+            {
+                "deck_title": "T",
+                "slides": [{"type": "wd_divider", "title": "D", "section_number": 7}],
+            }
+        )
+        txt = next(
+            sh.text_frame.text
+            for sh in prs.slides[0].shapes
+            if hasattr(sh, "text_frame") and "D" in (sh.text_frame.text or "")
+        )
+        self.assertTrue(txt.startswith("07"))
+
+    def test_wd_divider_falls_back_to_wd_divider_ordinal(self) -> None:
+        prs = _render_wd(
+            {
+                "deck_title": "T",
+                "slides": [
+                    {"type": "wd_divider", "title": "First"},
+                    {"type": "wd_section_intro", "title": "mid", "section_title": "mid"},
+                    {"type": "wd_divider", "title": "Second"},
+                    {"type": "wd_divider", "title": "Third"},
+                ],
+            }
+        )
+        divider_texts = []
+        for slide in prs.slides:
+            for sh in slide.shapes:
+                if hasattr(sh, "text_frame"):
+                    t = sh.text_frame.text or ""
+                    if "First" in t or "Second" in t or "Third" in t:
+                        divider_texts.append(t)
+        self.assertEqual(len(divider_texts), 3)
+        self.assertTrue(divider_texts[0].startswith("01"))
+        self.assertTrue(divider_texts[1].startswith("02"))
+        self.assertTrue(divider_texts[2].startswith("03"))
+
     def test_agenda_populates_all_rows_and_clears_unused(self) -> None:
         prs = _render_wd(
             {
@@ -267,6 +305,43 @@ class TestWdRenderingFidelity(unittest.TestCase):
         self.assertTrue(any("B body" in t for t in t4))
         self.assertTrue(any("C body" in t for t in t4))
         self.assertTrue(any("D body" in t for t in t4))
+
+    def test_one_block_grouped_semantics(self) -> None:
+        prs = _render_wd(
+            {
+                "deck_title": "T",
+                "slides": [
+                    {
+                        "type": "wd_one_block_grouped",
+                        "title": "Grouped Main",
+                        "section_title": "Grouped Strap",
+                        "block_title": "Grouped Cap",
+                        "block_body": "Grouped Body",
+                    }
+                ],
+            }
+        )
+        all_text = "\n".join(_all_texts_recursive(prs.slides[0]))
+        self.assertIn("Grouped Cap", all_text)
+        self.assertIn("Grouped Body", all_text)
+
+    def test_one_block_placeholder_combines_title_body(self) -> None:
+        prs = _render_wd(
+            {
+                "deck_title": "T",
+                "slides": [
+                    {
+                        "type": "wd_one_block_placeholder",
+                        "title": "Placeholder Main",
+                        "section_title": "Placeholder Strap",
+                        "block_title": "Placeholder Cap",
+                        "block_body": ["Line A", "Line B"],
+                    }
+                ],
+            }
+        )
+        texts = [sh.text_frame.text for sh in prs.slides[0].shapes if hasattr(sh, "text_frame")]
+        self.assertTrue(any("Placeholder Cap" in t and "Line A" in t and "Line B" in t for t in texts))
 
     def test_slide7_box_title_body_semantics(self) -> None:
         prs = _render_wd(

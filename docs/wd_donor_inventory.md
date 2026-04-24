@@ -37,6 +37,8 @@ This document describes the **packaged** WD donor deck: slide order, layouts, an
 | 20 | `Title, Subtitle and Content Full White` | `wd_tile_4` | **4** tiles → `(4,5,6,7)`. |
 | 21 | `Title, Subtitle and Content Full White` | `wd_tile_5` | **5** tiles → `(4,5,6,7,8)`. |
 | 22 | `Title, Subtitle and Content Full White` | `wd_tile_6` | **6** tiles → `(4,5,6,7,10,8)`. |
+| 23 | `Title, Subtitle and Content Full White` | `wd_one_block_grouped` | One-block grouped donor. Group shape `5`: title child `1`, body child `0`; title `ph 0`, section `ph 12`, footer shape `4`. |
+| 24 | `Title, Subtitle and Content Full White` | `wd_one_block_placeholder` | One-block placeholder donor. Content placeholder `ph 11` (`block`), title `ph 0`, section `ph 12`, footer shape `5`. |
 
 ## JSON shapes
 

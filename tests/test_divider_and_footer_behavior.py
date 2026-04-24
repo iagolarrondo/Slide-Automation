@@ -60,6 +60,23 @@ class TestDividerAndFooterBehavior(unittest.TestCase):
             self.assertIn("03", text)
             self.assertNotIn("Section 3", text)
 
+    def test_sloan_divider_behavior_unchanged(self) -> None:
+        payload = {
+            "deck_title": "T",
+            "slides": [
+                {"type": "divider", "title": "Alpha", "section_number": 9},
+                {"type": "divider", "title": "Beta", "section_title": "Section 4"},
+            ],
+        }
+        pptx_bytes = self._render_bytes(payload)
+        with zipfile.ZipFile(io.BytesIO(pptx_bytes), "r") as z:
+            s1 = _all_text_in_slide_xml(z.read("ppt/slides/slide11.xml"))
+            s2 = _all_text_in_slide_xml(z.read("ppt/slides/slide12.xml"))
+            self.assertIn("09", s1)
+            self.assertIn("Alpha", s1)
+            self.assertIn("04", s2)
+            self.assertIn("Beta", s2)
+
     def test_footer_cleared_when_absent(self) -> None:
         payload = {
             "deck_title": "T",

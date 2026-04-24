@@ -144,6 +144,8 @@ def apply_wd_slide(
     slide_data: Dict[str, Any],
     _slide_number: int,
     config: Dict[str, Any],
+    *,
+    wd_divider_ordinal: int | None = None,
 ) -> None:
     """Fill a cloned WD donor slide from ``slide_data`` (mapping already on ``slide``)."""
     # Late import: ``renderer`` imports this module only inside the render loop.
@@ -198,10 +200,22 @@ def apply_wd_slide(
         shape = None
         if donor_slide is not None and isinstance(target, dict) and isinstance(target.get("shape_index"), int):
             shape = _resolve_wd_shape_from_donor_index(slide, donor_slide, int(target["shape_index"]), R)
+        explicit = slide_data.get("section_number", None)
+        n_val: int | None = None
+        if explicit is not None:
+            try:
+                n_val = int(str(explicit).strip())
+            except Exception:
+                n_val = None
+        if n_val is None and isinstance(wd_divider_ordinal, int):
+            n_val = wd_divider_ordinal
+        numeral = f"{max(0, int(n_val or 1)):02d}"
         # Divider donor keeps numeral and section title in separate paragraphs
-        # within the same text box; update only the title paragraph.
-        if not _set_paragraph_text_preserving_runs(shape, 1, line):
-            _set_key("divider_text", line)
+        # within the same text box: p0 numeral, p1 title.
+        ok_num = _set_paragraph_text_preserving_runs(shape, 0, numeral)
+        ok_title = _set_paragraph_text_preserving_runs(shape, 1, line)
+        if not (ok_num and ok_title):
+            _set_key("divider_text", f"{numeral}\n{line}")
         return
 
     if slide_type == "wd_section_intro":
@@ -240,6 +254,49 @@ def apply_wd_slide(
         )
         _set_key("left_block", left)
         _set_key("right_block", right)
+        if "footer" in slide_data:
+            _set_key("footer", slide_data.get("footer", ""))
+        return
+
+    if slide_type == "wd_one_block_grouped":
+        title = str(slide_data.get("title", ""))
+        if title:
+            _set_key("title", title)
+        if "section_title" in slide_data:
+            _set_key("section_title", slide_data.get("section_title", ""))
+        if "block_title" in slide_data:
+            _set_key("block_title", slide_data.get("block_title", ""))
+        if "block_body" in slide_data:
+            _set_key("block_body", slide_data.get("block_body", ""))
+        if "footer" in slide_data:
+            _set_key("footer", slide_data.get("footer", ""))
+        return
+
+    if slide_type == "wd_one_block_placeholder":
+        title = str(slide_data.get("title", ""))
+        if title:
+            _set_key("title", title)
+        if "section_title" in slide_data:
+            _set_key("section_title", slide_data.get("section_title", ""))
+        target = mapping.get("block")
+        wrote_block = False
+        if donor_slide is not None and isinstance(target, int):
+            try:
+                shape = slide.placeholders[target]
+            except Exception:
+                shape = None
+            if shape is not None:
+                t = str(slide_data.get("block_title", ""))
+                b = R._normalize_text(slide_data.get("block_body", ""))
+                ok_t = _set_paragraph_text_preserving_runs(shape, 0, t)
+                ok_b = _set_paragraph_text_preserving_runs(shape, 1, b)
+                wrote_block = bool(ok_t or ok_b)
+        if not wrote_block:
+            block = _combine_block(
+                str(slide_data.get("block_title", "")),
+                slide_data.get("block_body", ""),
+            )
+            _set_key("block", block)
         if "footer" in slide_data:
             _set_key("footer", slide_data.get("footer", ""))
         return

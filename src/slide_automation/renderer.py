@@ -78,6 +78,8 @@ CONTENT_MAIN_TITLE_TYPES = {
     "wd_section_intro",
     "wd_two_column",
     "wd_two_column_alt",
+    "wd_one_block_grouped",
+    "wd_one_block_placeholder",
     "wd_three_column",
     "wd_four_column",
     "wd_mosaic_4",
@@ -749,6 +751,7 @@ def render_deck(
     prs = Presentation(str(template))
     donor_slides = list(prs.slides)
     donor_count = len(donor_slides)
+    wd_divider_seen = 0
 
     for slide_number, slide_data in enumerate(payload.get("slides", []), start=1):
         slide_type = slide_data.get("type")
@@ -786,7 +789,19 @@ def render_deck(
         if slide_type.startswith("wd_"):
             from .template_registry.wd_render import apply_wd_slide
 
-            apply_wd_slide(prs, slide, slide_type, slide_data, slide_number, config)
+            wd_divider_ordinal: int | None = None
+            if slide_type == "wd_divider":
+                wd_divider_seen += 1
+                wd_divider_ordinal = wd_divider_seen
+            apply_wd_slide(
+                prs,
+                slide,
+                slide_type,
+                slide_data,
+                slide_number,
+                config,
+                wd_divider_ordinal=wd_divider_ordinal,
+            )
             # WD path owns its own editable-target policy and footer writes.
             # Keep slide-number placeholders untouched by generic footer logic.
             continue

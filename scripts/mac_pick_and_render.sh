@@ -1,19 +1,18 @@
 #!/usr/bin/env bash
 # macOS: pick a deck-spec JSON (file dialog or path arg), copy to canonical repo input,
-# render with donor deck, open PowerPoint on success.
+# render with repo-local build module, open PowerPoint on success.
 #
 # Usage:
 #   scripts/mac_pick_and_render.sh                    # shows file picker
 #   scripts/mac_pick_and_render.sh /path/to/spec.json # skip picker
 #
-# Requires: macOS, python3 on PATH (3.9+), donor deck at templates/Sloan_Donor_Deck.pptx
+# Requires: macOS, python3 on PATH (3.9+)
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 VENV="$REPO_ROOT/.venv"
-DONOR="$REPO_ROOT/templates/Sloan_Donor_Deck.pptx"
 CANON_JSON="$REPO_ROOT/input/deck_spec.json"
 
 pick_json_via_dialog() {
@@ -29,11 +28,6 @@ APPLESCRIPT
 }
 
 ensure_env() {
-  if [[ ! -f "$DONOR" ]]; then
-    echo "Donor deck not found: $DONOR" >&2
-    exit 1
-  fi
-
   cd "$REPO_ROOT"
 
   if [[ ! -d "$VENV" ]]; then
@@ -47,6 +41,28 @@ ensure_env() {
   echo "Installing / refreshing dependencies ..." >&2
   pip install -q -r "$REPO_ROOT/requirements.txt"
   pip install -q -e "$REPO_ROOT"
+}
+
+resolve_template_id() {
+  local json_path="$1"
+  python3 - "$json_path" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+try:
+    obj = json.loads(path.read_text(encoding="utf-8"))
+except Exception:
+    print("")
+    raise SystemExit(0)
+
+tid = obj.get("template_id") or obj.get("template")
+if isinstance(tid, str) and tid.strip():
+    print(tid.strip())
+else:
+    print("")
+PY
 }
 
 main() {
@@ -81,11 +97,27 @@ main() {
 
   ensure_env
 
+  local template_id
+  template_id="$(resolve_template_id "$CANON_JSON")"
+
+  local -a cmd
+  cmd=(python3 -m slide_automation.build_cli --input "$CANON_JSON" --output "$out")
+  if [[ -n "$template_id" ]]; then
+    cmd+=(--template-id "$template_id")
+  fi
+
+  echo "Selected JSON: $src" >&2
+  if [[ -n "$template_id" ]]; then
+    echo "Resolved template_id: $template_id" >&2
+  else
+    echo "Resolved template_id: <default>" >&2
+  fi
+  echo -n "Render command: PYTHONPATH=src" >&2
+  printf ' %q' "${cmd[@]}" >&2
+  echo >&2
+
   echo "Rendering -> $out" >&2
-  slide-build \
-    --template-id sloan \
-    --input "$CANON_JSON" \
-    --output "$out"
+  PYTHONPATH=src "${cmd[@]}"
 
   echo "Opening PowerPoint ..." >&2
   if ! open -a "Microsoft PowerPoint" "$out" 2>/dev/null; then

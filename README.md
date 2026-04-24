@@ -9,7 +9,7 @@ Turn a **model-agnostic JSON deck spec** into an **editable PowerPoint** using `
 
 ## Happy Path
 
-1. Generate a deck-spec JSON file. Use [`docs/deck_generation_source_of_truth.md`](docs/deck_generation_source_of_truth.md) for editorial rules and [`docs/slide_layout_specs_sloan_poc.md`](docs/slide_layout_specs_sloan_poc.md) for slide-type selection. If you want paste-in LLM instructions, use [`docs/llm_project_bootstrap_updated.md`](docs/llm_project_bootstrap_updated.md).
+1. Generate a deck-spec JSON file. Use [`docs/deck_generation_source_of_truth.md`](docs/deck_generation_source_of_truth.md) for editorial rules and [`docs/slide_layout_specs_sloan_poc.md`](docs/slide_layout_specs_sloan_poc.md) for slide-type selection. If you want paste-in LLM instructions, use the canonical bootstrap at [`docs/llm_project_bootstrap_multitemplate_tightened.md`](docs/llm_project_bootstrap_multitemplate_tightened.md).
 2. Save the JSON anywhere convenient. The repo includes:
    - [`examples/example_deck.json`](examples/example_deck.json) (Sloan)
    - [`examples/example_deck_wd.json`](examples/example_deck_wd.json) (WD)
@@ -30,7 +30,9 @@ If you already have an activated venv and editable install, you can call `slide-
 
 ### macOS: pick JSON anywhere, render, open PowerPoint
 
-**Recommended (double-click):** in Finder, open the repo and double-click **`Mac Deck Render.command`**. A file dialog asks for your deck-spec JSON (anywhere on disk). The file is copied to `input/deck_spec.json`, rendered to `output/<original-basename>.pptx`, and opened in Microsoft PowerPoint.
+**Recommended (double-click):** in Finder, open the repo and double-click **`Mac Deck Render.command`**. A file dialog asks for your deck-spec JSON (anywhere on disk). The file is copied to `input/deck_spec.json`, then rendered via the repo-local module path (`PYTHONPATH=src python3 -m slide_automation.build_cli ...`) to `output/<original-basename>.pptx`, and opened in Microsoft PowerPoint.
+
+If the JSON includes top-level `template_id`, the launcher passes it as `--template-id <value>`; if absent, default template resolution applies.
 
 First time: if Terminal says the file is not executable, run once:
 
@@ -62,7 +64,7 @@ To skip the dialog (e.g. automation), pass the JSON path:
 | [`docs/tool_contract.md`](docs/tool_contract.md) | **Stable API & CLI** — `slide_automation.api`, `slide-validate`, `slide-render`, `slide-build`. |
 | [`docs/local_one_step_render.md`](docs/local_one_step_render.md) | **`slide-build`** and `bin/deck` usage. |
 | [`docs/testing.md`](docs/testing.md) | Smoke commands and unit tests. |
-| [`docs/llm_project_bootstrap_updated.md`](docs/llm_project_bootstrap_updated.md) | Optional instructions to paste into an LLM workspace. |
+| [`docs/llm_project_bootstrap_multitemplate_tightened.md`](docs/llm_project_bootstrap_multitemplate_tightened.md) | Canonical multi-template bootstrap to paste into an LLM workspace. |
 | [`schemas/deck_schema_v1.json`](schemas/deck_schema_v1.json) | Structural reference (validator is lightweight; schema may lag slightly). |
 
 ---
@@ -117,7 +119,11 @@ pip install -e .
 Template families are selected by JSON ``template_id`` (or CLI `--template-id`):
 
 - **Sloan (`template_id: "sloan"` or omitted)**: classic `cover` / `agenda` / `standard_*` types.
-- **WD (`template_id: "wd"`)**: `wd_*` slide types documented in [`docs/wd_donor_inventory.md`](docs/wd_donor_inventory.md).
+- **WD (`template_id: "wd"`)**: `wd_*` slide types documented in [`docs/wd_donor_inventory.md`](docs/wd_donor_inventory.md), including:
+  `wd_cover`, `wd_agenda_3`, `wd_agenda_4`, `wd_agenda_5`, `wd_agenda_6`, `wd_divider`,
+  `wd_section_intro`, `wd_two_column`, `wd_two_column_alt`, `wd_three_column`, `wd_four_column`,
+  `wd_mosaic_4`, `wd_mosaic_6`, `wd_mosaic_8`, `wd_tile_4`, `wd_tile_5`, `wd_tile_6`,
+  `wd_one_block_grouped`, `wd_one_block_placeholder`.
 
 ---
 

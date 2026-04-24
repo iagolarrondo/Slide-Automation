@@ -237,6 +237,31 @@ WD_SLIDE_TYPE_MAP: Dict[str, Dict[str, Any]] = {
         wd_content_shape_indices=WD_CONTENT_INDICES["wd_tile_6"],
         wd_editable_keys=("title", "section_title", "footer"),
     ),
+    "wd_one_block_grouped": _map_entry(
+        23,
+        _L_CONTENT,
+        {
+            "title": 0,
+            "section_title": 12,
+            "footer": {"shape_index": 4},
+            # Donor slide 23 has grouped one-block content:
+            # Group 16 (shape 5): child 1 title, child 0 body.
+            "block_title": {"shape_index": 5, "group_child_index": 1},
+            "block_body": {"shape_index": 5, "group_child_index": 0},
+        },
+        wd_editable_keys=("title", "section_title", "block_title", "block_body", "footer"),
+    ),
+    "wd_one_block_placeholder": _map_entry(
+        24,
+        _L_CONTENT,
+        {
+            "title": 0,
+            "section_title": 12,
+            "block": 11,
+            "footer": {"shape_index": 5},
+        },
+        wd_editable_keys=("title", "section_title", "block", "footer"),
+    ),
 }
 
 WD_DEFAULT_DONOR = "templates/WD_Template_Donor.pptx"

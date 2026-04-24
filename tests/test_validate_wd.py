@@ -32,6 +32,22 @@ class TestValidateWd(unittest.TestCase):
         errors, _ = validate_deck_spec(payload)
         self.assertEqual(errors, [])
 
+    def test_wd_one_block_requires_block_fields(self) -> None:
+        payload = {
+            "deck_title": "T",
+            "template_id": "wd",
+            "slides": [
+                {
+                    "type": "wd_one_block_grouped",
+                    "title": "Main",
+                    "section_title": "Section",
+                }
+            ],
+        }
+        errors, _ = validate_deck_spec(payload)
+        self.assertTrue(any("block_title" in e for e in errors))
+        self.assertTrue(any("block_body" in e for e in errors))
+
 
 if __name__ == "__main__":
     unittest.main()

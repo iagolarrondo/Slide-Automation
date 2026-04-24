@@ -8,6 +8,7 @@ Related docs:
 
 - Editorial rules for specs: [`deck_generation_source_of_truth.md`](deck_generation_source_of_truth.md)
 - Sloan layout / placeholder rules: [`slide_layout_specs_sloan_poc.md`](slide_layout_specs_sloan_poc.md)
+- Canonical LLM bootstrap (multi-template): [`llm_project_bootstrap_multitemplate_tightened.md`](llm_project_bootstrap_multitemplate_tightened.md)
 - Smoke JSON and tests: [`testing.md`](testing.md)
 
 ---
@@ -185,7 +186,7 @@ def generate_deck_spec(
 
 **Until implemented**, agents should:
 
-1. Use an LLM (or editor) with [`deck_generation_source_of_truth.md`](deck_generation_source_of_truth.md) + [`slide_layout_specs_sloan_poc.md`](slide_layout_specs_sloan_poc.md) as instructions.  
+1. Use an LLM (or editor) with [`llm_project_bootstrap_multitemplate_tightened.md`](llm_project_bootstrap_multitemplate_tightened.md) and supporting editorial/layout docs as instructions.  
 2. Emit JSON matching `validate_deck_*` expectations.  
 3. Call `validate_deck_payload` then `render_deck`.
 
